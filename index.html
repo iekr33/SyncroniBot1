@@ -1,0 +1,2847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SyncroniBot | El Bot que tu Servidor Merece</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="auth-styles-improved.css">
+
+  <style>
+    /* ============================================
+       RESET & ROOT VARIABLES
+    ============================================ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Colors */
+      --primary: #5865F2;
+      --primary-dark: #3d4ac7;
+      --primary-glow: rgba(88, 101, 242, 0.35);
+      --secondary: #57F287;
+      --secondary-dark: #3bc26a;
+      --accent: #FEE75C;
+      --danger: #ED4245;
+
+      /* Light mode */
+      --bg: #f0f1ff;
+      --bg-card: #ffffff;
+      --bg-elevated: #fafafa;
+      --bg-nav: rgba(255,255,255,0.85);
+      --text: #0d0e1a;
+      --text-muted: #6b7280;
+      --text-subtle: #9ca3af;
+      --border: rgba(88, 101, 242, 0.12);
+      --border-strong: rgba(88, 101, 242, 0.3);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 8px 30px rgba(0,0,0,0.10);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.14);
+      --shadow-glow: 0 0 40px var(--primary-glow);
+      --gradient-hero: linear-gradient(135deg, #5865F2 0%, #3d4ac7 40%, #2d1b8c 100%);
+
+      /* Typography */
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+
+      /* Spacing */
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-lg: 24px;
+      --radius-pill: 999px;
+    }
+
+    /* Dark mode */
+    body.dark-mode {
+      --bg: #0b0c1a;
+      --bg-card: #131425;
+      --bg-elevated: #1a1b2e;
+      --bg-nav: rgba(11,12,26,0.88);
+      --text: #e8eaf6;
+      --text-muted: #9095b5;
+      --text-subtle: #5c6080;
+      --border: rgba(88, 101, 242, 0.18);
+      --border-strong: rgba(88, 101, 242, 0.45);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+      --shadow-md: 0 8px 30px rgba(0,0,0,0.5);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.7);
+    }
+
+    /* ============================================
+       BASE
+    ============================================ */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    img { max-width: 100%; }
+
+    /* ============================================
+       NOISE TEXTURE OVERLAY
+    ============================================ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ============================================
+       SCROLL REVEAL
+    ============================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.65s cubic-bezier(.22,.61,.36,1), transform 0.65s cubic-bezier(.22,.61,.36,1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.08s; }
+    .reveal-delay-2 { transition-delay: 0.18s; }
+    .reveal-delay-3 { transition-delay: 0.28s; }
+    .reveal-delay-4 { transition-delay: 0.38s; }
+
+    /* ============================================
+       NAVIGATION
+    ============================================ */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--bg-nav);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.4s, border-color 0.4s;
+    }
+
+    nav {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Logo */
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      margin-right: 2.5rem;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--gradient-hero);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    .nav-links a {
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--primary);
+      background: rgba(88,101,242,0.08);
+    }
+
+    /* Nav right */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Icon buttons */
+    .nav-icon-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s;
+      color: var(--text-muted);
+    }
+
+    .nav-icon-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Auth buttons */
+    .auth-btn-ghost {
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      font-family: var(--font-body);
+      transition: all 0.2s;
+    }
+
+    .auth-btn-ghost:hover {
+      background: rgba(88,101,242,0.08);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .auth-btn-solid {
+      padding: 0.45rem 1.1rem;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: white;
+      font-family: var(--font-body);
+      transition: all 0.2s;
+      box-shadow: 0 2px 12px var(--primary-glow);
+    }
+
+    .auth-btn-solid:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 18px var(--primary-glow);
+    }
+
+    /* User menu (from original) */
+    .user-menu {
+      position: relative;
+      display: none;
+    }
+
+    .user-menu.visible { display: block; }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      background: var(--gradient-hero);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .user-avatar:hover { border-color: var(--primary); }
+
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      min-width: 190px;
+      overflow: hidden;
+      display: none;
+      animation: dropIn 0.2s ease;
+    }
+
+    .user-dropdown.open { display: block; }
+
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-dropdown-item {
+      display: block;
+      padding: 0.75rem 1.2rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .user-dropdown-item:hover {
+      background: rgba(88,101,242,0.07);
+      color: var(--primary);
+    }
+
+    .user-dropdown-item.logout {
+      border-top: 1px solid var(--border);
+      color: var(--danger);
+    }
+
+    .user-dropdown-item.logout:hover { background: rgba(237,66,69,0.08); }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text-muted);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* Mobile nav */
+    .mobile-nav {
+      display: none;
+      flex-direction: column;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem 1.5rem;
+      gap: 0.25rem;
+    }
+
+    .mobile-nav.open { display: flex; }
+
+    .mobile-nav a {
+      padding: 0.6rem 0.75rem;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .mobile-nav a:hover { color: var(--primary); background: rgba(88,101,242,0.07); }
+
+    .mobile-nav-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ============================================
+       HERO
+    ============================================ */
+    .hero {
+      position: relative;
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: var(--gradient-hero);
+      text-align: center;
+    }
+
+    /* Animated gradient mesh */
+    .hero-mesh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 70% at 20% 30%, rgba(88,101,242,0.6) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 55% at 80% 70%, rgba(87,242,135,0.2) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 60% at 60% 20%, rgba(254,231,92,0.12) 0%, transparent 65%);
+      animation: meshPulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes meshPulse {
+      0% { opacity: 0.85; }
+      100% { opacity: 1; }
+    }
+
+    /* Floating orbs */
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.25;
+      animation: floatOrb 10s ease-in-out infinite;
+    }
+
+    .hero-orb-1 {
+      width: 400px; height: 400px;
+      background: var(--secondary);
+      top: -100px; right: -80px;
+      animation-delay: 0s;
+    }
+
+    .hero-orb-2 {
+      width: 300px; height: 300px;
+      background: var(--accent);
+      bottom: 0; left: -60px;
+      animation-delay: -3s;
+    }
+
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -30px) scale(1.05); }
+      66% { transform: translate(-15px, 20px) scale(0.95); }
+    }
+
+    /* Grid lines */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 860px;
+      padding: 3rem 2rem;
+    }
+
+    /* Badge */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-pill);
+      padding: 0.35rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.03em;
+      margin-bottom: 1.75rem;
+      animation: fadeInDown 0.7s ease both;
+    }
+
+    .hero-badge-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--secondary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--secondary);
+      animation: blinkDot 2s ease-in-out infinite;
+    }
+
+    @keyframes blinkDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 800;
+      color: white;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      animation: fadeInDown 0.8s ease 0.1s both;
+    }
+
+    .hero h1 .highlight {
+      color: var(--secondary);
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero h1 .highlight::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--secondary);
+      border-radius: 2px;
+      opacity: 0.5;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+      color: rgba(255,255,255,0.78);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+      font-weight: 300;
+      animation: fadeInDown 0.9s ease 0.2s both;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeInDown 1s ease 0.3s both;
+    }
+
+    .btn-invite {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 2rem;
+      background: white;
+      color: var(--primary);
+      border: none;
+      border-radius: var(--radius-pill);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-body);
+      text-decoration: none;
+      transition: all 0.25s;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+
+    .btn-invite:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 36px rgba(0,0,0,0.3);
+    }
+
+    .btn-invite-icon {
+      font-size: 1.1rem;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1.75rem;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: var(--radius-pill);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font-body);
+      text-decoration: none;
+      transition: all 0.25s;
+      backdrop-filter: blur(8px);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.18);
+      transform: translateY(-2px);
+    }
+
+    /* Hero stats bar */
+    .hero-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      margin-top: 3.5rem;
+      padding-top: 2.5rem;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      animation: fadeInUp 1s ease 0.5s both;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+
+    .hero-stat-num {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-stat-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero-stat-sep {
+      width: 1px;
+      height: 36px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* Wave */
+    .hero-wave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================
+       SECTIONS COMMON
+    ============================================ */
+    section {
+      position: relative;
+      z-index: 1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .section-pad {
+      padding: 6rem 0;
+    }
+
+    .section-pad-sm {
+      padding: 4rem 0;
+    }
+
+    .label-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(88,101,242,0.1);
+      border: 1px solid rgba(88,101,242,0.2);
+      border-radius: var(--radius-pill);
+      padding: 0.3rem 0.9rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.9rem);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    /* ============================================
+       ABOUT / WHAT IS SECTION
+    ============================================ */
+    .about-section {
+      background: var(--bg);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .about-visual {
+      position: relative;
+    }
+
+    /* Mock Discord UI */
+    .discord-mockup {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      font-size: 0.82rem;
+    }
+
+    .dm-header {
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .dm-header-dot {
+      width: 10px; height: 10px;
+      background: var(--secondary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--secondary);
+    }
+
+    .dm-messages {
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .dm-msg {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+    }
+
+    .dm-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .dm-avatar.bot {
+      background: var(--gradient-hero);
+      color: white;
+    }
+
+    .dm-avatar.user {
+      background: linear-gradient(135deg, #57F287, #3bc26a);
+      color: white;
+    }
+
+    .dm-bubble {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 0 12px 12px 12px;
+      padding: 0.55rem 0.85rem;
+      color: var(--text);
+      line-height: 1.5;
+      max-width: 240px;
+    }
+
+    .dm-bubble.bot-bubble {
+      background: rgba(88,101,242,0.1);
+      border-color: rgba(88,101,242,0.2);
+      border-radius: 12px 12px 12px 0;
+    }
+
+    .dm-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.15rem;
+    }
+
+    .dm-name.user-name { color: var(--secondary-dark); }
+
+    .dm-embed {
+      background: rgba(88,101,242,0.08);
+      border-left: 3px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 0.6rem 0.8rem;
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .dm-embed-title {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.2rem;
+      font-size: 0.8rem;
+    }
+
+    .dm-typing {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1.2rem 1rem;
+      color: var(--text-subtle);
+      font-size: 0.75rem;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 3px;
+    }
+
+    .typing-dots span {
+      width: 5px; height: 5px;
+      background: var(--text-subtle);
+      border-radius: 50%;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Floating badge on mockup */
+    .mockup-badge {
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .mockup-badge-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--secondary), #3bc26a);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .mockup-badge-text strong {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .mockup-badge-text span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* About feature pills */
+    .about-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 2rem;
+    }
+
+    .about-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 0.4rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .about-pill:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(88,101,242,0.06);
+    }
+
+    /* ============================================
+       FEATURES
+    ============================================ */
+    .features-section {
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .features-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 4rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: all 0.3s cubic-bezier(.22,.61,.36,1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--gradient-hero);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-card:hover::before { transform: scaleX(1); }
+
+    .feature-icon {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-icon.purple { background: rgba(88,101,242,0.12); }
+    .feature-icon.green { background: rgba(87,242,135,0.12); }
+    .feature-icon.yellow { background: rgba(254,231,92,0.12); }
+    .feature-icon.red { background: rgba(237,66,69,0.1); }
+    .feature-icon.cyan { background: rgba(0,206,209,0.1); }
+    .feature-icon.orange { background: rgba(255,165,0,0.1); }
+
+    .feature-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.015em;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ============================================
+       STATS
+    ============================================ */
+    .stats-section {
+      background: var(--gradient-hero);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stats-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .stat-item {
+      padding: 1rem;
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: white;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.65);
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    .stat-sep {
+      width: 1px;
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* ============================================
+       TESTIMONIALS
+    ============================================ */
+    .testimonials-section {
+      background: var(--bg);
+    }
+
+    .testimonials-header {
+      text-align: center;
+      max-width: 580px;
+      margin: 0 auto 4rem;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .testimonial-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .testimonial-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .testimonial-stars {
+      display: flex;
+      gap: 3px;
+      color: var(--accent);
+      font-size: 0.9rem;
+    }
+
+    .testimonial-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-style: italic;
+      flex: 1;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .testimonial-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .testimonial-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .testimonial-role {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+    }
+
+    /* ============================================
+       FAQ
+    ============================================ */
+    .faq-section {
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-layout {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item.open { border-color: var(--border-strong); }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(88,101,242,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--primary);
+      transition: transform 0.25s;
+    }
+
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+    }
+
+    .faq-item.open .faq-answer { max-height: 300px; }
+
+    .faq-answer-inner {
+      padding: 0 1.5rem 1.2rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.75;
+    }
+
+    /* ============================================
+       DASHBOARD PLACEHOLDER
+    ============================================ */
+    .dashboard-section {
+      background: var(--bg);
+    }
+
+    .dashboard-preview {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      margin-top: 3rem;
+    }
+
+    .dashboard-topbar {
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .db-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+
+    .db-dot-red { background: #ED4245; }
+    .db-dot-yellow { background: #FEE75C; }
+    .db-dot-green { background: #57F287; }
+
+    .dashboard-topbar-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+      font-weight: 500;
+    }
+
+    .dashboard-body {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+    }
+
+    .dashboard-sidebar {
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .db-nav-item {
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .db-nav-item:hover { background: rgba(88,101,242,0.07); color: var(--primary); }
+    .db-nav-item.active { background: rgba(88,101,242,0.1); color: var(--primary); font-weight: 600; }
+
+    .dashboard-main {
+      padding: 1.5rem;
+    }
+
+    .db-stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .db-stat-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .db-stat-card-label {
+      font-size: 0.72rem;
+      color: var(--text-subtle);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .db-stat-card-value {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .db-stat-card-change {
+      font-size: 0.72rem;
+      color: var(--secondary-dark);
+      margin-top: 0.2rem;
+    }
+
+    .db-chart-placeholder {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      color: var(--text-subtle);
+      font-size: 0.85rem;
+    }
+
+    .db-coming-soon {
+      background: rgba(88,101,242,0.06);
+      border: 1px dashed rgba(88,101,242,0.25);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      grid-column: 1 / -1;
+    }
+
+    .db-coming-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      border-radius: var(--radius-pill);
+      padding: 0.2rem 0.7rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ============================================
+       FINAL CTA
+    ============================================ */
+    .final-cta {
+      background: var(--gradient-hero);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .final-cta-mesh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 80% 50%, rgba(87,242,135,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 20% 50%, rgba(254,231,92,0.1) 0%, transparent 70%);
+    }
+
+    .final-cta-content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .final-cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: white;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+
+    .final-cta p {
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .final-cta-btns {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-cta-white {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 2.25rem;
+      background: white;
+      color: var(--primary);
+      border: none;
+      border-radius: var(--radius-pill);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-body);
+      text-decoration: none;
+      transition: all 0.25s;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+
+    .btn-cta-white:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .btn-cta-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1rem 2rem;
+      background: transparent;
+      color: white;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: var(--radius-pill);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font-body);
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+
+    .btn-cta-outline:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: white;
+      transform: translateY(-2px);
+    }
+
+    /* ============================================
+       FOOTER
+    ============================================ */
+    footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-main {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      padding: 4rem 0 3rem;
+    }
+
+    .footer-brand p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-top: 0.75rem;
+      max-width: 260px;
+    }
+
+    .footer-brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .footer-col h4 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 1rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .footer-col ul li a {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover { color: var(--primary); }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .footer-bottom p {
+      font-size: 0.82rem;
+      color: var(--text-subtle);
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .footer-social {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .footer-social:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(88,101,242,0.06);
+    }
+
+    /* ============================================
+       AUTH MODAL (improved design, original logic)
+    ============================================ */
+    .auth-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .auth-modal.open { display: flex; }
+
+    .auth-modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 30px 100px rgba(0,0,0,0.4);
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem;
+      position: relative;
+      animation: modalIn 0.3s cubic-bezier(.22,.61,.36,1);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.94) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .auth-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 32px; height: 32px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .auth-close:hover { border-color: var(--danger); color: var(--danger); }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 2rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.6rem;
+      border: none;
+      background: none;
+      border-radius: calc(var(--radius-sm) - 2px);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: var(--bg-card);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    .auth-form h2 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.02em;
+    }
+
+    .auth-form-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.01em;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(88,101,242,0.12);
+    }
+
+    .form-group input::placeholder { color: var(--text-subtle); }
+
+    .auth-submit {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+
+    .auth-submit:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px var(--primary-glow);
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--text-subtle);
+      font-size: 0.8rem;
+    }
+
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .social-login {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .social-btn {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.2s;
+    }
+
+    .social-btn:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-card);
+      transform: translateY(-1px);
+    }
+
+    .social-btn.discord { border-color: rgba(88,101,242,0.3); }
+    .social-btn.discord:hover { background: rgba(88,101,242,0.06); }
+
+    /* ============================================
+       ABOUT US SECTION
+    ============================================ */
+    .aboutus-section {
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .team-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .team-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .team-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: white;
+    }
+
+    .team-name {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .team-role {
+      font-size: 0.82rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .team-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       RESPONSIVE
+    ============================================ */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-main { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .about-visual { order: -1; }
+      .faq-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .team-grid { grid-template-columns: repeat(2, 1fr); }
+      .dashboard-body { grid-template-columns: 1fr; }
+      .dashboard-sidebar { display: none; }
+      .db-stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .features-grid { grid-template-columns: 1fr; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; gap: 0; }
+      .stat-sep { display: none; }
+      .hero-stats { flex-wrap: wrap; gap: 1.5rem; }
+      .hero-stat-sep { display: none; }
+      .footer-main { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+      .section-pad { padding: 4rem 0; }
+      .db-stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 2.3rem; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .final-cta-btns { flex-direction: column; align-items: center; }
+      .auth-modal-content { padding: 1.75rem; }
+      nav { padding: 0 1rem; }
+      .container { padding: 0 1.25rem; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+  </style>
+</head>
+<body>
+
+<!-- ============================================
+     HEADER / NAV
+============================================ -->
+<header>
+  <nav>
+    <!-- Logo -->
+    <a href="index.html#inicio" class="nav-logo">
+      <div class="nav-logo-icon">🤖</div>
+      SyncroniBot
+    </a>
+
+    <!-- Desktop links -->
+    <div class="nav-links">
+      <a href="index.html#inicio" id="navInicio" class="active">Inicio</a>
+      <a href="proyecto.html" id="navProyecto">Qué es el Proyecto</a>
+      <a href="caracteristicas.html" id="navCaracteristicas">Características</a>
+      <a href="donaciones.html" id="navDonaciones">Donaciones</a>
+      <a href="contacto.html" id="navContacto">Contáctanos</a>
+    </div>
+
+    <!-- Right actions -->
+    <div class="nav-right">
+      <!-- Theme toggle -->
+      <button class="nav-icon-btn" id="btnTema" title="Cambiar tema" aria-label="Cambiar tema">🌙</button>
+      <!-- Language toggle -->
+      <button class="nav-icon-btn" id="btnTraductor" title="Cambiar idioma" aria-label="Cambiar idioma">🌍</button>
+
+      <!-- Auth buttons -->
+      <div id="authButtons" style="display:flex;gap:0.6rem;align-items:center;">
+        <button class="auth-btn-ghost" id="btnLogin">Iniciar Sesión</button>
+        <button class="auth-btn-solid" id="btnRegister">Registrarse</button>
+      </div>
+
+      <!-- User menu (shown when logged in) -->
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="#" class="user-dropdown-item">👤 Mi Perfil</a>
+          <a href="#" class="user-dropdown-item">⚙️ Configuración</a>
+          <a href="#dashboard" class="user-dropdown-item">📊 Dashboard</a>
+          <div class="user-dropdown-item logout" id="btnLogout">🚪 Cerrar Sesión</div>
+        </div>
+      </div>
+
+      <!-- Hamburger -->
+      <button class="hamburger" id="hamburger" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile nav -->
+  <div class="mobile-nav" id="mobileNav">
+    <a href="index.html#inicio" id="mNavInicio">Inicio</a>
+    <a href="proyecto.html" id="mNavProyecto">Qué es el Proyecto</a>
+    <a href="caracteristicas.html" id="mNavCaracteristicas">Características</a>
+    <a href="donaciones.html" id="mNavDonaciones">Donaciones</a>
+    <a href="contacto.html" id="mNavContacto">Contáctanos</a>
+    <div class="mobile-nav-actions">
+      <button class="auth-btn-ghost" id="mBtnLogin">Iniciar Sesión</button>
+      <button class="auth-btn-solid" id="mBtnRegister">Registrarse</button>
+    </div>
+  </div>
+</header>
+
+
+<!-- ============================================
+     AUTH MODAL
+============================================ -->
+<div class="auth-modal" id="authModal">
+  <div class="auth-modal-content">
+    <button class="auth-close" id="authClose">✕</button>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login" id="tabLogin">Iniciar Sesión</button>
+      <button class="auth-tab" data-tab="register" id="tabRegister">Registrarse</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form active" id="loginForm">
+      <h2 id="loginTitle">¡Bienvenido de nuevo!</h2>
+      <p class="auth-form-subtitle" id="loginSubtitle">Inicia sesión para continuar</p>
+
+      <form id="formLogin">
+        <div class="form-group">
+          <label for="loginEmail" id="labelLoginEmail">Correo electrónico</label>
+          <input type="email" id="loginEmail" placeholder="tu@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword" id="labelLoginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="auth-submit" id="btnSubmitLogin">Iniciar Sesión</button>
+      </form>
+
+      <div class="auth-divider"><span id="dividerLogin">O continúa con</span></div>
+
+      <div class="social-login">
+        <button class="social-btn discord" id="btnDiscord" type="button">
+          <span>🎮</span> Continuar con Discord
+        </button>
+        <button class="social-btn google" id="btnGoogle" type="button">
+          <span>🔍</span> Continuar con Google
+        </button>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form" id="registerForm">
+      <h2 id="registerTitle">¡Únete a SyncroniBot!</h2>
+      <p class="auth-form-subtitle" id="registerSubtitle">Crea tu cuenta gratis</p>
+
+      <form id="formRegister">
+        <div class="form-group">
+          <label for="registerName" id="labelRegisterName">Nombre de usuario</label>
+          <input type="text" id="registerName" placeholder="Tu nombre" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="registerEmail" id="labelRegisterEmail">Correo electrónico</label>
+          <input type="email" id="registerEmail" placeholder="tu@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="registerPassword" id="labelRegisterPassword">Contraseña</label>
+          <input type="password" id="registerPassword" placeholder="Mínimo 8 caracteres" required autocomplete="new-password" minlength="8">
+        </div>
+        <div class="form-group">
+          <label for="registerPasswordConfirm" id="labelRegisterPasswordConfirm">Confirmar contraseña</label>
+          <input type="password" id="registerPasswordConfirm" placeholder="Repite tu contraseña" required autocomplete="new-password" minlength="8">
+        </div>
+        <button type="submit" class="auth-submit" id="btnSubmitRegister">Crear Cuenta</button>
+      </form>
+
+      <div class="auth-divider"><span id="dividerRegister">O regístrate con</span></div>
+
+      <div class="social-login">
+        <button class="social-btn discord" id="btnDiscordRegister" type="button">
+          <span>🎮</span> Registrarse con Discord
+        </button>
+        <button class="social-btn google" id="btnGoogleRegister" type="button">
+          <span>🔍</span> Registrarse con Google
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================
+     HERO
+============================================ -->
+<section class="hero" id="inicio">
+  <div class="hero-mesh"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      <span>Bot activo y disponible 24/7</span>
+    </div>
+
+    <h1 id="titulo">🤖 El bot que tu servidor<br><span class="highlight">merece</span></h1>
+
+    <p class="hero-subtitle" id="subtitulo">
+      SyncroniBot es la solución todo-en-uno para gestionar, moderar y potenciar tu comunidad de Discord — sin complicaciones.
+    </p>
+
+    <div class="hero-cta">
+      <a href="#" class="btn-invite" id="btnDescubre">
+        <span class="btn-invite-icon">🚀</span>
+        Invitar al Bot
+      </a>
+      <a href="donaciones.html" class="btn-ghost" id="btnApoya">
+        ❤️ Apoyar el proyecto
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="stat1">10+</div>
+        <div class="hero-stat-label" id="statLabel1">Funciones principales</div>
+      </div>
+      <div class="hero-stat-sep"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="stat2">100%</div>
+        <div class="hero-stat-label" id="statLabel2">Personalizable</div>
+      </div>
+      <div class="hero-stat-sep"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="stat3">24/7</div>
+        <div class="hero-stat-label" id="statLabel3">Disponibilidad</div>
+      </div>
+    </div>
+  </div>
+
+  <svg class="hero-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill="var(--bg)" d="M0,40 C360,0 1080,60 1440,20 L1440,60 L0,60 Z"/>
+  </svg>
+</section>
+
+
+<!-- ============================================
+     ABOUT / QUÉ ES
+============================================ -->
+<section class="about-section section-pad" id="quees">
+  <div class="container">
+    <div class="about-grid">
+      <!-- Text side -->
+      <div>
+        <span class="label-pill reveal">🤖 Sobre el bot</span>
+        <h2 class="section-heading reveal reveal-delay-1" id="tituloQueEs">¿Qué es SyncroniBot?</h2>
+        <p class="section-sub reveal reveal-delay-2" id="descripcionQueEs">
+          Una solución inteligente diseñada para revolucionar la forma en que gestionas tu comunidad de Discord
+        </p>
+
+        <div class="about-pills reveal reveal-delay-3">
+          <span class="about-pill">🛡️ Moderación automática</span>
+          <span class="about-pill">🎭 Gestión de roles</span>
+          <span class="about-pill">⚙️ Tareas automatizadas</span>
+          <span class="about-pill">📊 Estadísticas</span>
+          <span class="about-pill">🔔 Notificaciones</span>
+          <span class="about-pill">🌐 Multiservidor</span>
+        </div>
+
+        <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="reveal reveal-delay-1">
+            <h3 style="font-family:var(--font-display);font-weight:700;color:var(--text);margin-bottom:0.4rem;" id="titulo1">Organización Total</h3>
+            <p style="color:var(--text-muted);font-size:0.93rem;line-height:1.7;" id="p1">SyncroniBot es una solución todo-en-uno diseñada para potenciar la organización, la gestión y la experiencia general dentro de servidores de Discord.</p>
+          </div>
+          <div class="reveal reveal-delay-2">
+            <h3 style="font-family:var(--font-display);font-weight:700;color:var(--text);margin-bottom:0.4rem;" id="titulo2">Centraliza Funciones</h3>
+            <p style="color:var(--text-muted);font-size:0.93rem;line-height:1.7;" id="p2">El bot centraliza funciones clave como la moderación, la gestión de roles, la automatización de tareas y la organización de información importante, evitando que datos relevantes se pierdan entre cientos de mensajes.</p>
+          </div>
+          <div class="reveal reveal-delay-3">
+            <h3 style="font-family:var(--font-display);font-weight:700;color:var(--text);margin-bottom:0.4rem;" id="titulo3">Adaptable a Tu Comunidad</h3>
+            <p style="color:var(--text-muted);font-size:0.93rem;line-height:1.7;" id="p3">Gracias a sus herramientas inteligentes y personalizables, SyncroniBot se adapta tanto a pequeños servidores como a grandes comunidades, creando un entorno más ordenado, seguro y dinámico.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual side: Discord mockup -->
+      <div class="about-visual reveal reveal-delay-2">
+        <div class="discord-mockup">
+          <div class="dm-header">
+            <div class="dm-header-dot"></div>
+            #general · SyncroniBot
+          </div>
+          <div class="dm-messages">
+            <div class="dm-msg">
+              <div class="dm-avatar user">A</div>
+              <div>
+                <div class="dm-name user-name">Alex</div>
+                <div class="dm-bubble">!stats @servidor</div>
+              </div>
+            </div>
+            <div class="dm-msg">
+              <div class="dm-avatar bot">S</div>
+              <div>
+                <div class="dm-name">SyncroniBot</div>
+                <div class="dm-bubble bot-bubble">
+                  ¡Aquí tienes las estadísticas! 📊
+                  <div class="dm-embed">
+                    <div class="dm-embed-title">📈 Estadísticas del Servidor</div>
+                    Miembros activos: <strong>247</strong><br>
+                    Mensajes hoy: <strong>1,432</strong><br>
+                    Nivel de actividad: <strong>🔥 Alto</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dm-msg">
+              <div class="dm-avatar user">M</div>
+              <div>
+                <div class="dm-name user-name">María</div>
+                <div class="dm-bubble">!mute @usuario por spam</div>
+              </div>
+            </div>
+            <div class="dm-msg">
+              <div class="dm-avatar bot">S</div>
+              <div>
+                <div class="dm-name">SyncroniBot</div>
+                <div class="dm-bubble bot-bubble">✅ Usuario silenciado correctamente. Razón: spam. Duración: 10 min.</div>
+              </div>
+            </div>
+          </div>
+          <div class="dm-typing">
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+            SyncroniBot está escribiendo...
+          </div>
+        </div>
+
+        <!-- Floating badge -->
+        <div class="mockup-badge">
+          <div class="mockup-badge-icon">✅</div>
+          <div class="mockup-badge-text">
+            <strong>Respuesta al instante</strong>
+            <span>Latencia &lt; 50ms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     FEATURES
+============================================ -->
+<section class="features-section section-pad" id="caracteristicas">
+  <div class="container">
+    <div class="features-header">
+      <span class="label-pill reveal">⚡ Características</span>
+      <h2 class="section-heading reveal reveal-delay-1">Todo lo que necesitas,<br>en un solo bot</h2>
+      <p class="section-sub reveal reveal-delay-2">Diseñado para que gestionar tu servidor sea simple, rápido y sin dolores de cabeza.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon purple">🛡️</div>
+        <h3>Moderación Avanzada</h3>
+        <p>Silencia, expulsa y banea usuarios automáticamente basándose en reglas configurables. Mantén tu servidor limpio sin esfuerzo.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon green">🎭</div>
+        <h3>Gestión de Roles</h3>
+        <p>Asigna roles automáticamente por nivel de actividad, verificación o mediante reacciones. Total control jerárquico.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon yellow">⚡</div>
+        <h3>Automatización de Tareas</h3>
+        <p>Programa mensajes, limpia canales, envía recordatorios y ejecuta acciones automáticas para mantener tu servidor activo.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon cyan">📊</div>
+        <h3>Estadísticas en Tiempo Real</h3>
+        <p>Consulta actividad de miembros, canales más activos y tendencias de tu comunidad con comandos sencillos.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon orange">🔔</div>
+        <h3>Sistema de Notificaciones</h3>
+        <p>Notifica a tu comunidad de nuevos streams, publicaciones, eventos o cualquier webhook que configures.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon red">🎮</div>
+        <h3>Comandos de Entretenimiento</h3>
+        <p>Mini-juegos, trivia, música y comandos personalizados para hacer que tu servidor sea el más divertido del bloque.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     STATS
+============================================ -->
+<section class="stats-section section-pad-sm">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <div class="stat-number" id="statBig1">10+</div>
+        <div class="stat-label">Funciones principales</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item reveal reveal-delay-1">
+        <div class="stat-number" id="statBig2">100%</div>
+        <div class="stat-label">Personalizable</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item reveal reveal-delay-2">
+        <div class="stat-number" id="statBig3">24/7</div>
+        <div class="stat-label">Uptime garantizado</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     TESTIMONIALS
+============================================ -->
+<section class="testimonials-section section-pad" id="comentarios">
+  <div class="container">
+    <div class="testimonials-header">
+      <span class="label-pill reveal">💬 Testimonios</span>
+      <h2 class="section-heading reveal reveal-delay-1">Lo que dicen nuestros usuarios</h2>
+      <p class="section-sub reveal reveal-delay-2">Miles de administradores ya confían en SyncroniBot para gestionar sus comunidades.</p>
+    </div>
+
+    <!-- Testimonials grid — structure ready for DB connection -->
+    <div class="testimonials-grid" id="testimonialsGrid">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"SyncroniBot transformó completamente cómo gestiono mi servidor de gaming. La moderación automática es simplemente increíble, ya no necesito estar pendiente todo el día."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background: linear-gradient(135deg,#5865F2,#3d4ac7);">JM</div>
+          <div>
+            <div class="testimonial-name">JuanMari_Dev</div>
+            <div class="testimonial-role">Admin · Servidor Gaming 2.4k miembros</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Lo que más me gusta es la facilidad de configuración. En menos de 10 minutos ya tenía todo funcionando. Los comandos de roles automáticos me han ahorrado horas de trabajo."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background: linear-gradient(135deg,#57F287,#3bc26a);">SR</div>
+          <div>
+            <div class="testimonial-name">SaraRobles</div>
+            <div class="testimonial-role">Moderadora · Comunidad Arte 800 miembros</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★☆</div>
+        <p class="testimonial-text">"Probé muchos bots antes de encontrar SyncroniBot. La diferencia en rendimiento y personalización es brutal. El equipo de soporte también responde rápido."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background: linear-gradient(135deg,#FEE75C,#f0a000);">CP</div>
+          <div>
+            <div class="testimonial-name">CarlosPuig</div>
+            <div class="testimonial-role">Propietario · Servidor Tech 5.1k miembros</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     DASHBOARD PLACEHOLDER
+============================================ -->
+<section class="dashboard-section section-pad" id="dashboard">
+  <div class="container">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;margin-bottom:0.5rem;">
+      <div>
+        <span class="label-pill reveal">📊 Dashboard</span>
+        <h2 class="section-heading reveal reveal-delay-1">Tu panel de control</h2>
+        <p class="section-sub reveal reveal-delay-2">Gestiona tu bot, revisa estadísticas y configura todo desde un solo lugar.</p>
+      </div>
+      <a href="#" class="btn-invite" style="background:var(--primary);color:white;box-shadow:0 4px 16px var(--primary-glow);" class="reveal">
+        Acceder al panel →
+      </a>
+    </div>
+
+    <div class="dashboard-preview reveal">
+      <div class="dashboard-topbar">
+        <div class="db-dot db-dot-red"></div>
+        <div class="db-dot db-dot-yellow"></div>
+        <div class="db-dot db-dot-green"></div>
+        <span class="dashboard-topbar-title">SyncroniBot Dashboard — Mi Servidor</span>
+      </div>
+      <div class="dashboard-body">
+        <div class="dashboard-sidebar">
+          <div class="db-nav-item active">📊 Resumen</div>
+          <div class="db-nav-item">🛡️ Moderación</div>
+          <div class="db-nav-item">🎭 Roles</div>
+          <div class="db-nav-item">⚙️ Configuración</div>
+          <div class="db-nav-item">📋 Logs</div>
+          <div class="db-nav-item">🔔 Notificaciones</div>
+        </div>
+        <div class="dashboard-main">
+          <div class="db-stats-row">
+            <div class="db-stat-card">
+              <div class="db-stat-card-label">Miembros</div>
+              <div class="db-stat-card-value">247</div>
+              <div class="db-stat-card-change">↑ +12 esta semana</div>
+            </div>
+            <div class="db-stat-card">
+              <div class="db-stat-card-label">Comandos hoy</div>
+              <div class="db-stat-card-value">1,432</div>
+              <div class="db-stat-card-change">↑ +8% vs ayer</div>
+            </div>
+            <div class="db-stat-card">
+              <div class="db-stat-card-label">Sanciones</div>
+              <div class="db-stat-card-value">3</div>
+              <div class="db-stat-card-change">↓ -2 vs ayer</div>
+            </div>
+            <div class="db-stat-card">
+              <div class="db-stat-card-label">Uptime</div>
+              <div class="db-stat-card-value">99.9%</div>
+              <div class="db-stat-card-change">✅ En línea</div>
+            </div>
+          </div>
+          <div class="db-stats-row" style="grid-template-columns:1fr;">
+            <div class="db-coming-soon">
+              <div class="db-coming-badge">Próximamente</div>
+              <p style="color:var(--text-muted);font-size:0.9rem;">Gráficos de actividad, logs en tiempo real y configuración avanzada disponibles en la versión completa del dashboard. <a href="#" style="color:var(--primary);font-weight:600;">Regístrate para acceder →</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     ABOUT US / NOSOTROS
+============================================ -->
+<section class="aboutus-section section-pad" id="nosotros">
+  <div class="container">
+    <div style="text-align:center;max-width:580px;margin:0 auto 1rem;">
+      <span class="label-pill reveal">👥 Nuestro equipo</span>
+      <h2 class="section-heading reveal reveal-delay-1">Las personas detrás del bot</h2>
+      <p class="section-sub reveal reveal-delay-2" style="margin:0 auto;">Un equipo apasionado por las comunidades online y la tecnología, construyendo herramientas que importan.</p>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#5865F2,#3d4ac7);">👑</div>
+        <div class="team-name">Fundador & Dev</div>
+        <div class="team-role">Desarrollador Principal</div>
+        <div class="team-desc">Arquitecto del bot y visionario del proyecto. Más de 3 años construyendo bots de Discord.</div>
+      </div>
+      <div class="team-card reveal reveal-delay-1">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#57F287,#3bc26a);">🎨</div>
+        <div class="team-name">Diseño & UX</div>
+        <div class="team-role">Diseñadora de Experiencia</div>
+        <div class="team-desc">Responsable de que cada interacción con SyncroniBot sea intuitiva y agradable.</div>
+      </div>
+      <div class="team-card reveal reveal-delay-2">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#FEE75C,#f0a000);">🛠️</div>
+        <div class="team-name">Backend & Infra</div>
+        <div class="team-role">Ingeniero de Infraestructura</div>
+        <div class="team-desc">Garantiza que el bot esté disponible 24/7 con latencias mínimas y máxima escalabilidad.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     FAQ
+============================================ -->
+<section class="faq-section section-pad" id="faq">
+  <div class="container">
+    <div class="faq-layout">
+      <div>
+        <span class="label-pill reveal">❓ FAQ</span>
+        <h2 class="section-heading reveal reveal-delay-1">Preguntas frecuentes</h2>
+        <p class="section-sub reveal reveal-delay-2">¿Tienes dudas? Aquí encontrarás las respuestas más comunes.</p>
+        <div style="margin-top:2rem;" class="reveal reveal-delay-3">
+          <a href="contacto.html" class="btn-invite" style="background:var(--primary);color:white;box-shadow:0 4px 16px var(--primary-glow);">
+            Más preguntas → Contáctanos
+          </a>
+        </div>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFAQ(this)">
+            ¿Es gratuito SyncroniBot?
+            <div class="faq-chevron">▼</div>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Sí, SyncroniBot tiene un plan gratuito con todas las funciones esenciales. Ofrecemos planes premium para servidores grandes que necesiten funciones avanzadas y mayor límite de uso.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal reveal-delay-1">
+          <button class="faq-question" onclick="toggleFAQ(this)">
+            ¿Cómo invito al bot a mi servidor?
+            <div class="faq-chevron">▼</div>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Haz clic en el botón "Invitar al Bot" en cualquier parte de esta página. Se abrirá el flujo de autorización de Discord donde podrás seleccionar el servidor y los permisos necesarios.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal reveal-delay-2">
+          <button class="faq-question" onclick="toggleFAQ(this)">
+            ¿Necesito saber programar para configurarlo?
+            <div class="faq-chevron">▼</div>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">¡Para nada! SyncroniBot está diseñado para ser configurado fácilmente desde comandos de Discord o desde nuestro dashboard visual. No necesitas ningún conocimiento técnico.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal reveal-delay-3">
+          <button class="faq-question" onclick="toggleFAQ(this)">
+            ¿Recopila datos de mis miembros?
+            <div class="faq-chevron">▼</div>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Solo recopilamos los datos estrictamente necesarios para el funcionamiento del bot (IDs de usuarios y servidores). Nunca vendemos ni compartimos datos con terceros. Cumplimos con el RGPD.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-question" onclick="toggleFAQ(this)">
+            ¿Puedo personalizar los mensajes del bot?
+            <div class="faq-chevron">▼</div>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Sí, prácticamente todos los mensajes, embeds y respuestas del bot son personalizables desde el dashboard o mediante comandos de configuración. Haz que el bot hable con la voz de tu comunidad.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     FINAL CTA
+============================================ -->
+<section class="final-cta section-pad" id="cta">
+  <div class="final-cta-mesh"></div>
+  <div class="container">
+    <div class="final-cta-content">
+      <span class="label-pill reveal" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);color:white;">🚀 Empieza ahora</span>
+      <h2 class="reveal reveal-delay-1" id="tituloCTA">¿Listo para transformar<br>tu servidor?</h2>
+      <p class="reveal reveal-delay-2" id="descCTA">Únete a la comunidad de servidores que ya están experimentando una gestión más eficiente y una experiencia más rica con SyncroniBot.</p>
+      <div class="final-cta-btns reveal reveal-delay-3">
+        <a href="#" class="btn-cta-white" id="btnVerCaracteristicas">
+          🚀 Invitar al Bot — Es gratis
+        </a>
+        <a href="contacto.html" class="btn-cta-outline" id="btnContacto">
+          💬 Hablar con el equipo
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     FOOTER
+============================================ -->
+<footer>
+  <div class="container">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-brand-logo">
+          <div class="nav-logo-icon">🤖</div>
+          SyncroniBot
+        </div>
+        <p>Potenciando comunidades de Discord con inteligencia y automatización. Hecho con ❤️ para administradores como tú.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Producto</h4>
+        <ul>
+          <li><a href="caracteristicas.html">Características</a></li>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="donaciones.html">Planes & Precios</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Recursos</h4>
+        <ul>
+          <li><a href="#">Documentación</a></li>
+          <li><a href="#">Comandos</a></li>
+          <li><a href="proyecto.html">Sobre el proyecto</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Empresa</h4>
+        <ul>
+          <li><a href="#nosotros">Equipo</a></li>
+          <li><a href="contacto.html">Contacto</a></li>
+          <li><a href="#">Privacidad</a></li>
+          <li><a href="#">Términos</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p id="footerText">© 2025 SyncroniBot — Potenciando comunidades con IA</p>
+      <div class="footer-socials">
+        <a href="#" class="footer-social" title="Discord">🎮</a>
+        <a href="#" class="footer-social" title="Twitter">🐦</a>
+        <a href="#" class="footer-social" title="GitHub">💻</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ============================================
+     JAVASCRIPT
+============================================ -->
+<script>
+/* ============================================
+   TRANSLATIONS (original logic preserved)
+============================================ */
+const textos = {
+  es: {
+    navInicio: "Inicio",
+    navProyecto: "Qué es el Proyecto",
+    navCaracteristicas: "Características",
+    navDonaciones: "Donaciones",
+    navContacto: "Contáctanos",
+    btnLogin: "Iniciar Sesión",
+    btnRegister: "Registrarse",
+    tabLogin: "Iniciar Sesión",
+    tabRegister: "Registrarse",
+    loginTitle: "¡Bienvenido de nuevo!",
+    loginSubtitle: "Inicia sesión para continuar",
+    labelLoginEmail: "Correo electrónico",
+    labelLoginPassword: "Contraseña",
+    btnSubmitLogin: "Iniciar Sesión",
+    dividerLogin: "O continúa con",
+    btnDiscord: "🎮 Continuar con Discord",
+    btnGoogle: "🔍 Continuar con Google",
+    registerTitle: "¡Únete a SyncroniBot!",
+    registerSubtitle: "Crea tu cuenta gratis",
+    labelRegisterName: "Nombre de usuario",
+    labelRegisterEmail: "Correo electrónico",
+    labelRegisterPassword: "Contraseña",
+    labelRegisterPasswordConfirm: "Confirmar contraseña",
+    btnSubmitRegister: "Crear Cuenta",
+    dividerRegister: "O regístrate con",
+    btnDiscordRegister: "🎮 Registrarse con Discord",
+    btnGoogleRegister: "🔍 Registrarse con Google",
+    titulo: "🤖 El bot que tu servidor merece",
+    subtitulo: "SyncroniBot es la solución todo-en-uno para gestionar, moderar y potenciar tu comunidad de Discord — sin complicaciones.",
+    btnDescubre: "🚀 Invitar al Bot",
+    btnApoya: "❤️ Apoyar el proyecto",
+    tituloQueEs: "¿Qué es SyncroniBot?",
+    descripcionQueEs: "Una solución inteligente diseñada para revolucionar la forma en que gestionas tu comunidad de Discord",
+    titulo1: "Organización Total",
+    p1: "SyncroniBot es una solución todo-en-uno diseñada para potenciar la organización, la gestión y la experiencia general dentro de servidores de Discord.",
+    titulo2: "Centraliza Funciones",
+    p2: "El bot centraliza funciones clave como la moderación, la gestión de roles, la automatización de tareas y la organización de información importante, evitando que datos relevantes se pierdan entre cientos de mensajes.",
+    titulo3: "Adaptable a Tu Comunidad",
+    p3: "Gracias a sus herramientas inteligentes y personalizables, SyncroniBot se adapta tanto a pequeños servidores como a grandes comunidades, creando un entorno más ordenado, seguro y dinámico.",
+    stat1: "10+",
+    statLabel1: "Funciones principales",
+    stat2: "100%",
+    statLabel2: "Personalizable",
+    stat3: "24/7",
+    statLabel3: "Disponibilidad",
+    tituloCTA: "¿Listo para transformar tu servidor?",
+    descCTA: "Únete a la comunidad de servidores que ya están experimentando una gestión más eficiente con SyncroniBot",
+    btnVerCaracteristicas: "🚀 Invitar al Bot — Es gratis",
+    btnContacto: "💬 Hablar con el equipo",
+    footerText: "© 2025 SyncroniBot — Potenciando comunidades con IA"
+  },
+  en: {
+    navInicio: "Home",
+    navProyecto: "About the Project",
+    navCaracteristicas: "Features",
+    navDonaciones: "Donations",
+    navContacto: "Contact Us",
+    btnLogin: "Sign In",
+    btnRegister: "Sign Up",
+    tabLogin: "Sign In",
+    tabRegister: "Sign Up",
+    loginTitle: "Welcome back!",
+    loginSubtitle: "Sign in to continue",
+    labelLoginEmail: "Email address",
+    labelLoginPassword: "Password",
+    btnSubmitLogin: "Sign In",
+    dividerLogin: "Or continue with",
+    btnDiscord: "🎮 Continue with Discord",
+    btnGoogle: "🔍 Continue with Google",
+    registerTitle: "Join SyncroniBot!",
+    registerSubtitle: "Create your free account",
+    labelRegisterName: "Username",
+    labelRegisterEmail: "Email address",
+    labelRegisterPassword: "Password",
+    labelRegisterPasswordConfirm: "Confirm password",
+    btnSubmitRegister: "Create Account",
+    dividerRegister: "Or sign up with",
+    btnDiscordRegister: "🎮 Sign up with Discord",
+    btnGoogleRegister: "🔍 Sign up with Google",
+    titulo: "🤖 The bot your server deserves",
+    subtitulo: "SyncroniBot is the all-in-one solution to manage, moderate and boost your Discord community — effortlessly.",
+    btnDescubre: "🚀 Invite the Bot",
+    btnApoya: "❤️ Support the project",
+    tituloQueEs: "What is SyncroniBot?",
+    descripcionQueEs: "An intelligent solution designed to revolutionize the way you manage your Discord community",
+    titulo1: "Total Organization",
+    p1: "SyncroniBot is an all-in-one solution designed to enhance organization, management, and overall experience within Discord servers.",
+    titulo2: "Centralize Functions",
+    p2: "The bot centralizes key functions such as moderation, role management, task automation, and organization of important information, preventing relevant data from getting lost among hundreds of messages.",
+    titulo3: "Adaptable to Your Community",
+    p3: "Thanks to its intelligent and customizable tools, SyncroniBot adapts to both small servers and large communities, creating a more organized, secure, and dynamic environment.",
+    stat1: "10+",
+    statLabel1: "Main features",
+    stat2: "100%",
+    statLabel2: "Customizable",
+    stat3: "24/7",
+    statLabel3: "Availability",
+    tituloCTA: "Ready to transform your server?",
+    descCTA: "Join the community of servers already experiencing more efficient management with SyncroniBot",
+    btnVerCaracteristicas: "🚀 Invite the Bot — It's free",
+    btnContacto: "💬 Talk to the team",
+    footerText: "© 2025 SyncroniBot — Empowering communities with AI"
+  }
+};
+
+let idiomaActual = 'es';
+
+/* Language toggle (original logic) */
+document.getElementById('btnTraductor').addEventListener('click', () => {
+  idiomaActual = idiomaActual === 'es' ? 'en' : 'es';
+  aplicarTextos();
+});
+
+function aplicarTextos() {
+  const t = textos[idiomaActual];
+  Object.keys(t).forEach(id => {
+    const elem = document.getElementById(id);
+    if (elem) elem.textContent = t[id];
+  });
+}
+
+/* Dark mode (original logic) */
+document.getElementById('btnTema').addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  document.getElementById('btnTema').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('btnTema').title = isDark
+    ? (idiomaActual === 'es' ? 'Modo Claro' : 'Light Mode')
+    : (idiomaActual === 'es' ? 'Modo Oscuro' : 'Dark Mode');
+});
+
+/* Apply texts on load */
+aplicarTextos();
+
+/* ============================================
+   HAMBURGER MENU
+============================================ */
+const hamburger = document.getElementById('hamburger');
+const mobileNav = document.getElementById('mobileNav');
+
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open');
+  mobileNav.classList.toggle('open');
+});
+
+/* Close mobile nav on link click */
+mobileNav.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    hamburger.classList.remove('open');
+    mobileNav.classList.remove('open');
+  });
+});
+
+/* Mobile auth buttons trigger modal */
+document.getElementById('mBtnLogin')?.addEventListener('click', () => {
+  openModal('login');
+  hamburger.classList.remove('open');
+  mobileNav.classList.remove('open');
+});
+
+document.getElementById('mBtnRegister')?.addEventListener('click', () => {
+  openModal('register');
+  hamburger.classList.remove('open');
+  mobileNav.classList.remove('open');
+});
+
+/* ============================================
+   AUTH MODAL (original logic)
+============================================ */
+function openModal(tab = 'login') {
+  const modal = document.getElementById('authModal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  switchTab(tab);
+}
+
+function closeModal() {
+  const modal = document.getElementById('authModal');
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+  document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm')?.classList.add('active');
+}
+
+/* Tab switching */
+document.querySelectorAll('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+/* Open modal buttons */
+document.getElementById('btnLogin').addEventListener('click', () => openModal('login'));
+document.getElementById('btnRegister').addEventListener('click', () => openModal('register'));
+document.getElementById('authClose').addEventListener('click', closeModal);
+
+/* Close on backdrop click */
+document.getElementById('authModal').addEventListener('click', (e) => {
+  if (e.target.id === 'authModal') closeModal();
+});
+
+/* Close on Escape */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* User avatar dropdown */
+document.getElementById('userAvatar')?.addEventListener('click', () => {
+  document.getElementById('userDropdown')?.classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('userMenu');
+  if (menu && !menu.contains(e.target)) {
+    document.getElementById('userDropdown')?.classList.remove('open');
+  }
+});
+
+/* ============================================
+   SCROLL REVEAL
+============================================ */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ============================================
+   FAQ TOGGLE
+============================================ */
+function toggleFAQ(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+/* ============================================
+   ACTIVE NAV LINK ON SCROLL
+============================================ */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (scrollY >= top) current = section.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.href.includes(current)) a.classList.add('active');
+  });
+}, { passive: true });
+</script>
+
+<!-- Original auth scripts (logic preserved) -->
+<script src="auth.js"></script>
+<script src="shared-config.js"></script>
+
+<script src="shared-config.js"></script>
+<script src="auth.js"></script>
+
+<script>
+  const API_URL = "http://192.168.237.26:3000";
+</script>
+
+</body>
+</html>
